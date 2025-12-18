@@ -8,7 +8,7 @@ const JWT_refreshSECRET = process.env.JWT_refreshSECRET || 'defaultrefreshsecret
 const generateToken = (usuario: IUsuario, res: Response): string =>{
     const payload = { id: usuario._id.toString(), rol: usuario.rol };
     
-const token : string = sign({payload}, JWT_SECRET, {expiresIn: "15s"});
+const token : string = sign({payload}, JWT_SECRET, {expiresIn: "1h"});
 
 return token;
 };

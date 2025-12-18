@@ -139,30 +139,39 @@ export async function createUser(req: Request, res: Response): Promise<Response>
  
 
   export async function login(req: Request, res: Response): Promise<Response> {
-  try {
-    const { username, password } = req.body;
-    console.log('login usuario', username, password);
-    const User= await userService.loginUser(username, password);
-    console.log('Usuario en login:', User);
-    if (!User) {
-      return res.status(401).json({ error: "Credenciales inválidas" });
-    }
-    // Generar token
-    const token = await generateToken(User!, res);
-    const refreshToken = await generateRefreshToken(User!, res);
-    return res.status(200).json({
-      User,
-      message: "LOGIN EXITOSO",
-      token,
-      refreshToken
+    try {
+      const { username, password } = req.body;
+      console.log('login usuario', username, password);
+      const user = await userService.loginUser(username, password);
+      console.log('Usuario en login:', user);
       
-    });
-    console.log('token generado:', User, token, refreshToken);
-  } catch (error) {
-    return res.status(500).json({ error: "Error en el login" });
+      if (!user) {
+        return res.status(401).json({ error: "Credenciales inválidas" });
+      }
+      
+      // Generar tokens
+      const token = await generateToken(user, res);
+      const refreshToken = await generateRefreshToken(user, res);
+      
+      // IMPORTANTE: Enviar solo los datos necesarios del usuario (sin password)
+      return res.status(200).json({
+        message: "LOGIN EXITOSO",
+        token,
+        refreshToken,
+        user: {
+          _id: user._id.toString(),
+          username: user.username,
+          gmail: user.gmail,
+          birthday: user.birthday,
+          rol: user.rol
+        }
+      });
+    } catch (error) {
+      console.error('Error en login:', error);
+      return res.status(500).json({ error: "Error en el login" });
+    }
   }
 
-}
 export async function refreshAccessToken(req: Request, res: Response): Promise<Response> {
   try {
     const id = (req as any).user.payload.id;
